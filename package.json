@@ -1,7 +1,7 @@
 {
   "name": "freemius-deployer",
-  "version": "1.0.0",
-  "description": "",
+  "version": "1.0.1",
+  "description": "Deploy WordPress plugin to Freemius from the 'build' directory",
   "main": "index.js",
   "type": "module",
   "bin": "./index.js",
@@ -15,9 +15,10 @@
   },
   "keywords": [
     "freemius",
+    "WordPress",
     "deploy"
   ],
-  "author": "",
+  "author": "Nilambar Sharma <nilambar@outlook.com> (https://www.nilambar.net/)",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/ernilambar/freemius-deployer/issues"
