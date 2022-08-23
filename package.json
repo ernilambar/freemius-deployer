@@ -26,8 +26,11 @@
   "dependencies": {
     "@babel/core": "^7.18.10",
     "chalk": "^5.0.1",
-    "read-pkg-up": "^9.1.0",
-    "unixify": "^1.0.0"
+    "crypto-js": "^4.1.1",
+    "dotenv": "^16.0.1",
+    "fs-extra": "^10.1.0",
+    "just-merge": "^3.1.1",
+    "needle": "^3.1.0"
   },
   "devDependencies": {
     "@wordpress/eslint-plugin": "^12.9.0",
