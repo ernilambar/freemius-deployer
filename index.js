@@ -23,7 +23,7 @@ const base64UrlEncode = ( str ) => {
 	return str;
 };
 
-const freemisDeployer = () => {
+const freemiusDeployer = () => {
 	console.log( 'Processing...' );
 
 	const defaults = {
@@ -108,4 +108,4 @@ const freemisDeployer = () => {
 	} );
 };
 
-freemisDeployer();
+freemiusDeployer();

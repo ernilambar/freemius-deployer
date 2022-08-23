@@ -1,3 +1,10 @@
 # freemius-deployer
 
-Freemius Deployer
+> Deploy Freemius plugin
+
+## Install
+
+```sh
+npm install --save-dev freemius-deployer
+```
+
