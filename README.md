@@ -1,0 +1,2 @@
+# freemius-deployer
+Freemius Deployer
