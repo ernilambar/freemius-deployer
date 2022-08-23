@@ -1,0 +1,36 @@
+{
+  "name": "freemius-deployer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "bin": "./index.js",
+  "scripts": {
+    "eslint": "eslint --quiet .",
+    "eslint:fix": "eslint --quiet --fix ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ernilambar/freemius-deployer.git"
+  },
+  "keywords": [
+    "freemius",
+    "deploy"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ernilambar/freemius-deployer/issues"
+  },
+  "homepage": "https://github.com/ernilambar/freemius-deployer#readme",
+  "dependencies": {
+    "@babel/core": "^7.18.10",
+    "chalk": "^5.0.1",
+    "read-pkg-up": "^9.1.0",
+    "unixify": "^1.0.0"
+  },
+  "devDependencies": {
+    "@wordpress/eslint-plugin": "^12.9.0",
+    "eslint": "^8.21.0"
+  }
+}
