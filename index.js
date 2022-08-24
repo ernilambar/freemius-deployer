@@ -4,8 +4,12 @@ import fs from 'fs-extra';
 import path from 'path';
 
 import chalk from 'chalk';
+import compareVersions from 'compare-versions';
 
 import 'dotenv/config';
+
+import freemiusPackage from 'freemius-node-sdk';
+const Freemius = freemiusPackage;
 
 import needlePackage from 'needle';
 const { post } = needlePackage;
@@ -50,6 +54,29 @@ const freemiusDeployer = () => {
 		console.error( chalk.red( 'Invalid Developer ID.' ) );
 		process.exit();
 	}
+
+	const developer = new Freemius( 'developer', developerId, publicKey, secretKey );
+
+	Object.filter = ( obj, predicate ) =>
+		Object.keys( obj )
+			.filter( ( key ) => predicate( obj[ key ] ) )
+			.reduce( ( res, key ) => ( res[ key ] = obj[ key ], res ), {} );
+
+	developer.Api( '/plugins/' + pluginId + '/tags.json', 'GET', [], [], function( e ) {
+		const deployments = JSON.parse( e );
+		const { tags } = deployments;
+
+		const filteredValue = Object.fromEntries( Object.entries( tags ).filter( ( [ key, value ] ) => {
+			const cmp = compareVersions( value.version, pkg.version );
+			return cmp >= 0 ? true : false;
+		} ) );
+
+		// If count is greater than zero, tag already exists.
+		if ( Object.keys( filteredValue ).length > 0 ) {
+			console.log( chalk.red( `Version ${ chalk.bold( pkg.version ) } already exists.` ) );
+			process.exit();
+		}
+	} );
 
 	const zipFile = path.join( zipPath, zipName );
 

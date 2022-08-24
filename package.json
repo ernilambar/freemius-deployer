@@ -1,6 +1,6 @@
 {
   "name": "freemius-deployer",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Deploy WordPress plugin to Freemius from the 'build' directory",
   "main": "index.js",
   "type": "module",
@@ -27,8 +27,10 @@
   "dependencies": {
     "@babel/core": "^7.18.10",
     "chalk": "^5.0.1",
+    "compare-versions": "^4.1.3",
     "crypto-js": "^4.1.1",
     "dotenv": "^16.0.1",
+    "freemius-node-sdk": "git+https://github.com/Freemius/freemius-node-sdk.git",
     "fs-extra": "^10.1.0",
     "just-merge": "^3.1.1",
     "needle": "^3.1.0"
