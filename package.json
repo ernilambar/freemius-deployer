@@ -1,6 +1,6 @@
 {
   "name": "freemius-deployer",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Deploy WordPress plugin to Freemius from the 'build' directory",
   "main": "index.js",
   "type": "module",
