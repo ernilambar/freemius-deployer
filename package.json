@@ -22,17 +22,13 @@
   "bin": "./bin/cli.js",
   "scripts": {
     "lint": "standard",
-    "lint:fix": "standard --fix",
+    "format": "standard --fix",
     "test": "node --test"
   },
   "dependencies": {
     "chalk": "^6.0.0",
     "compare-versions": "^6.1.1",
-    "crypto-js": "^4.2.0",
-    "dotenv": "^17.4.2",
-    "fs-extra": "^11.4.0",
-    "just-merge": "^3.2.0",
-    "needle": "^3.5.0"
+    "dotenv": "^17.4.2"
   },
   "devDependencies": {
     "standard": "^17.1.2"

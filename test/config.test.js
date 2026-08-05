@@ -2,7 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import os from 'os'
 import path from 'path'
-import fs from 'fs-extra'
+import { mkdtempSync, writeFileSync } from 'node:fs'
 
 import { loadConfig } from '../lib/config.js'
 import { ConfigError } from '../lib/errors.js'
@@ -26,13 +26,13 @@ const withEnv = (vars, fn) => {
 }
 
 const makeProjectDir = (pkg) => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'freemius-deployer-test-'))
-  fs.writeJsonSync(path.join(dir, 'package.json'), pkg)
+  const dir = mkdtempSync(path.join(os.tmpdir(), 'freemius-deployer-test-'))
+  writeFileSync(path.join(dir, 'package.json'), JSON.stringify(pkg))
   return dir
 }
 
 test('throws ConfigError when package.json cannot be read', () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'freemius-deployer-test-'))
+  const dir = mkdtempSync(path.join(os.tmpdir(), 'freemius-deployer-test-'))
 
   withEnv({ FS__API_DEV_ID: '1', FS__API_PLUGIN_ID: '2', FS__API_PUBLIC_KEY: 'pub', FS__API_SECRET_KEY: 'sec' }, () => {
     assert.throws(() => loadConfig(dir), ConfigError)
