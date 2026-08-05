@@ -122,6 +122,30 @@ test('applies partial freemiusDeployer overrides, defaulting the rest', () => {
   })
 })
 
+test('reports all problems at once instead of only the first one hit', () => {
+  const dir = makeProjectDir({ name: 'my-plugin', version: '1.2.3' })
+
+  withEnv({ FS__API_DEV_ID: 'abc', FS__API_PLUGIN_ID: 'abc' }, () => {
+    assert.throws(() => loadConfig(dir), {
+      message: ['Invalid Plugin ID.', 'Invalid Developer ID.', 'Missing public key.', 'Missing secret key.'].join('\n')
+    })
+  })
+})
+
+test('throws ConfigError when zipName, zipPath or addContributor have the wrong type', () => {
+  const dir = makeProjectDir({
+    name: 'my-plugin',
+    version: '1.2.3',
+    freemiusDeployer: { zipName: 1, zipPath: '', addContributor: 'yes' }
+  })
+
+  withEnv({ FS__API_DEV_ID: '1', FS__API_PLUGIN_ID: '2', FS__API_PUBLIC_KEY: 'pub', FS__API_SECRET_KEY: 'sec' }, () => {
+    assert.throws(() => loadConfig(dir), {
+      message: ['"zipName" must be a non-empty string.', '"zipPath" must be a non-empty string.', '"addContributor" must be a boolean.'].join('\n')
+    })
+  })
+})
+
 test('merges freemiusDeployer overrides from package.json', () => {
   const dir = makeProjectDir({
     name: 'my-plugin',

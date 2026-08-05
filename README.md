@@ -1,6 +1,6 @@
 # freemius-deployer
 
-> Deploy WordPress plugin to Freemius from the 'build' directory
+Deploy a WordPress plugin zip to Freemius.
 
 ## Install
 
@@ -34,6 +34,13 @@ FS__API_PLUGIN_ID=12345
 FS__API_PUBLIC_KEY="pk_YOUR_PUBLIC_KEY"
 FS__API_SECRET_KEY="sk_YOUR_SECRET_KEY"
 ```
+
+## CLI flags
+
+- `--dry-run` — validate without uploading
+- `--config <path>` — use a different project root
+- `--env-file <path>` — use a different env file
+- `--quiet` — suppress non-error output
 
 ## License
 

@@ -1,7 +1,7 @@
 {
   "name": "freemius-deployer",
   "version": "1.0.3",
-  "description": "Deploy WordPress plugin to Freemius from the 'build' directory",
+  "description": "Deploy a WordPress plugin zip to Freemius.",
   "keywords": [
     "freemius",
     "WordPress",
