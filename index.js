@@ -27,7 +27,7 @@ const base64UrlEncode = (str) => {
   return str
 }
 
-const freemiusDeployer = () => {
+const freemiusDeployer = async () => {
   console.log('Processing...')
 
   const defaults = {
@@ -47,42 +47,41 @@ const freemiusDeployer = () => {
 
   if (!Number.isInteger(pluginId)) {
     console.error(chalk.red('Invalid Plugin ID.'))
-    process.exit()
+    process.exit(1)
   }
 
   if (!Number.isInteger(developerId)) {
     console.error(chalk.red('Invalid Developer ID.'))
-    process.exit()
+    process.exit(1)
   }
 
   const developer = new Freemius('developer', developerId, publicKey, secretKey)
 
-  Object.filter = (obj, predicate) =>
-    Object.keys(obj)
-      .filter((key) => predicate(obj[key]))
-      .reduce((res, key) => (res[key] = obj[key], res), {})
-
-  developer.Api('/plugins/' + pluginId + '/tags.json', 'GET', [], [], function (e) {
-    const deployments = JSON.parse(e)
-    const { tags } = deployments
-
-    const filteredValue = Object.fromEntries(Object.entries(tags).filter(([key, value]) => {
-      const cmp = compareVersions(value.version, pkg.version)
-      return cmp >= 0
-    }))
-
-    // If count is greater than zero, tag already exists.
-    if (Object.keys(filteredValue).length > 0) {
-      console.log(chalk.red(`Version ${chalk.bold(pkg.version)} already exists.`))
-      process.exit()
-    }
+  const tagsResponse = await new Promise((resolve) => {
+    developer.Api('/plugins/' + pluginId + '/tags.json', 'GET', [], [], function (e) {
+      resolve(e)
+    })
   })
+
+  const deployments = JSON.parse(tagsResponse)
+  const { tags } = deployments
+
+  const filteredValue = Object.fromEntries(Object.entries(tags).filter(([key, value]) => {
+    const cmp = compareVersions(value.version, pkg.version)
+    return cmp >= 0
+  }))
+
+  // If count is greater than zero, tag already exists.
+  if (Object.keys(filteredValue).length > 0) {
+    console.log(chalk.red(`Version ${chalk.bold(pkg.version)} already exists.`))
+    process.exit(1)
+  }
 
   const zipFile = path.join(zipPath, zipName)
 
   if (!fs.existsSync(zipFile)) {
     console.log(`File not found: ${chalk.yellow(zipFile)}`)
-    process.exit()
+    process.exit(1)
   }
 
   const buffer = fs.readFileSync(zipPath + zipName)
@@ -121,13 +120,13 @@ const freemiusDeployer = () => {
   post('https://api.freemius.com' + resourceUrl, data, options, function (error, response, body) {
     if (error) {
       console.error(chalk.red('Error deploying to Freemius.'))
-      process.exit()
+      process.exit(1)
     }
 
     if (typeof body === 'object') {
       if (typeof body.error !== 'undefined') {
         console.error(chalk.red('Error: ' + body.error.message))
-        process.exit()
+        process.exit(1)
       }
 
       console.error(chalk.green('Successfully deployed v' + body.version + ' to Freemius.'))
@@ -135,4 +134,7 @@ const freemiusDeployer = () => {
   })
 }
 
-freemiusDeployer()
+freemiusDeployer().catch((err) => {
+  console.error(chalk.red(err.message || err))
+  process.exit(1)
+})
