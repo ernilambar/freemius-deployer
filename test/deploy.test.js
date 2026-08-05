@@ -48,6 +48,14 @@ test('rejects with DeployError on a transport error', async () => {
   )
 })
 
+test('resolves with raw text when the response body is not JSON', async () => {
+  mock.method(globalThis, 'fetch', async () => ({ text: async () => 'plain text response' }))
+
+  const result = await deployZip(credentials, Buffer.from('zip-contents'), { pluginId: 2, zipName: 'plugin.zip', addContributor: false })
+
+  assert.equal(result, 'plain text response')
+})
+
 test('rejects with ApiError when the response body reports an error', async () => {
   mock.method(globalThis, 'fetch', async () => ({
     text: async () => JSON.stringify({ error: { message: 'Plugin ID is invalid.' } })

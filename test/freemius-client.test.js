@@ -31,3 +31,12 @@ test('getTags throws ApiError when the response is not ok', async () => {
     (err) => err instanceof ApiError && /404/.test(err.message) && /not found/.test(err.message)
   )
 })
+
+test('getTags throws ApiError on a transport failure (network error or timeout)', async () => {
+  mock.method(globalThis, 'fetch', async () => { throw new Error('network down') })
+
+  await assert.rejects(
+    getTags({ developerId: 1, publicKey: 'pub', secretKey: 'sec' }, 2),
+    (err) => err instanceof ApiError
+  )
+})

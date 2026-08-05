@@ -1,44 +1,17 @@
 #!/usr/bin/env node
 
-import path from 'path'
-import { existsSync, readFileSync } from 'node:fs'
-
 import chalk from 'chalk'
 
 import 'dotenv/config'
 
 import { loadConfig } from '../lib/config.js'
-import { checkVersionAvailable } from '../lib/version.js'
-import { deployZip } from '../lib/deploy.js'
-import { VersionExistsError, ZipFileNotFoundError } from '../lib/errors.js'
+import { runDeploy } from '../lib/run.js'
 
 const main = async () => {
   console.log('Processing...')
 
   const config = loadConfig()
-  const { packageVersion, zipName, zipPath, addContributor, developerId, pluginId, publicKey, secretKey } = config
-
-  const credentials = { developerId, publicKey, secretKey }
-
-  const available = await checkVersionAvailable(credentials, pluginId, packageVersion)
-
-  if (!available) {
-    throw new VersionExistsError(`Version ${packageVersion} already exists.`)
-  }
-
-  const zipFile = path.join(zipPath, zipName)
-
-  if (!existsSync(zipFile)) {
-    throw new ZipFileNotFoundError(`File not found: ${zipFile}`)
-  }
-
-  const buffer = readFileSync(zipFile)
-
-  const result = await deployZip(
-    credentials,
-    buffer,
-    { pluginId, zipName, addContributor }
-  )
+  const result = await runDeploy(config)
 
   console.log(chalk.green(`Successfully deployed v${result.version} to Freemius.`))
 }

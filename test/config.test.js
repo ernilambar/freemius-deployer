@@ -74,6 +74,54 @@ test('applies defaults when no freemiusDeployer config is present', () => {
   })
 })
 
+test('throws ConfigError when FS__API_DEV_ID is not a valid number', () => {
+  const dir = makeProjectDir({ name: 'my-plugin', version: '1.2.3' })
+
+  withEnv({ FS__API_DEV_ID: 'abc', FS__API_PLUGIN_ID: '2', FS__API_PUBLIC_KEY: 'pub', FS__API_SECRET_KEY: 'sec' }, () => {
+    assert.throws(() => loadConfig(dir), { message: 'Invalid Developer ID.' })
+  })
+})
+
+test('throws ConfigError when FS__API_PLUGIN_ID is not a valid number', () => {
+  const dir = makeProjectDir({ name: 'my-plugin', version: '1.2.3' })
+
+  withEnv({ FS__API_DEV_ID: '1', FS__API_PLUGIN_ID: 'abc', FS__API_PUBLIC_KEY: 'pub', FS__API_SECRET_KEY: 'sec' }, () => {
+    assert.throws(() => loadConfig(dir), { message: 'Invalid Plugin ID.' })
+  })
+})
+
+test('throws ConfigError when FS__API_PUBLIC_KEY is missing', () => {
+  const dir = makeProjectDir({ name: 'my-plugin', version: '1.2.3' })
+
+  withEnv({ FS__API_DEV_ID: '1', FS__API_PLUGIN_ID: '2', FS__API_SECRET_KEY: 'sec' }, () => {
+    assert.throws(() => loadConfig(dir), { message: 'Missing public key.' })
+  })
+})
+
+test('throws ConfigError when FS__API_SECRET_KEY is missing', () => {
+  const dir = makeProjectDir({ name: 'my-plugin', version: '1.2.3' })
+
+  withEnv({ FS__API_DEV_ID: '1', FS__API_PLUGIN_ID: '2', FS__API_PUBLIC_KEY: 'pub' }, () => {
+    assert.throws(() => loadConfig(dir), { message: 'Missing secret key.' })
+  })
+})
+
+test('applies partial freemiusDeployer overrides, defaulting the rest', () => {
+  const dir = makeProjectDir({
+    name: 'my-plugin',
+    version: '1.2.3',
+    freemiusDeployer: { zipName: 'custom.zip' }
+  })
+
+  withEnv({ FS__API_DEV_ID: '1', FS__API_PLUGIN_ID: '2', FS__API_PUBLIC_KEY: 'pub', FS__API_SECRET_KEY: 'sec' }, () => {
+    const config = loadConfig(dir)
+
+    assert.equal(config.zipName, 'custom.zip')
+    assert.equal(config.zipPath, 'build/')
+    assert.equal(config.addContributor, false)
+  })
+})
+
 test('merges freemiusDeployer overrides from package.json', () => {
   const dir = makeProjectDir({
     name: 'my-plugin',
