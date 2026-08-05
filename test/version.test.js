@@ -4,7 +4,7 @@ import assert from 'node:assert/strict'
 import { checkVersionAvailable } from '../lib/version.js'
 import { ApiError } from '../lib/errors.js'
 
-const credentials = { developerId: 1, publicKey: 'pub', secretKey: 'sec' }
+const credentials = { apiToken: 'token' }
 
 const mockTagsResponse = (body) => {
   mock.method(globalThis, 'fetch', async () => ({ ok: true, status: 200, text: async () => body }))
@@ -15,7 +15,7 @@ test.afterEach(() => {
 })
 
 test('returns true when no existing tag conflicts with the version', async () => {
-  mockTagsResponse(JSON.stringify({ tags: { 1: { version: '1.0.0' }, 2: { version: '1.1.0' } } }))
+  mockTagsResponse(JSON.stringify({ tags: [{ version: '1.0.0' }, { version: '1.1.0' }] }))
 
   const available = await checkVersionAvailable(credentials, 2, '1.2.0')
 
@@ -23,7 +23,7 @@ test('returns true when no existing tag conflicts with the version', async () =>
 })
 
 test('returns false when a tag already has an equal or higher version', async () => {
-  mockTagsResponse(JSON.stringify({ tags: { 1: { version: '1.2.0' } } }))
+  mockTagsResponse(JSON.stringify({ tags: [{ version: '1.2.0' }] }))
 
   const available = await checkVersionAvailable(credentials, 2, '1.2.0')
 
