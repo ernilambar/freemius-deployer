@@ -22,7 +22,8 @@
   "bin": "./bin/cli.js",
   "scripts": {
     "lint": "standard",
-    "lint:fix": "standard --fix"
+    "lint:fix": "standard --fix",
+    "test": "node --test"
   },
   "dependencies": {
     "chalk": "^6.0.0",
