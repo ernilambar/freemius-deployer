@@ -1,6 +1,6 @@
 {
   "name": "freemius-deployer",
-  "version": "1.0.3",
+  "version": "2.0.0",
   "description": "Deploy a WordPress plugin zip to Freemius.",
   "keywords": [
     "freemius",
@@ -20,6 +20,10 @@
   "type": "module",
   "main": "lib/index.js",
   "bin": "./bin/cli.js",
+  "files": [
+    "bin/",
+    "lib/"
+  ],
   "scripts": {
     "lint": "standard",
     "format": "standard --fix",
@@ -36,10 +40,5 @@
   },
   "engines": {
     "node": ">=22"
-  },
-  "standard": {
-    "globals": [
-      "__basedir"
-    ]
   }
 }

@@ -10,12 +10,9 @@ import { VersionExistsError, ZipFileNotFoundError } from '../lib/errors.js'
 const baseConfig = {
   packageVersion: '1.2.0',
   zipName: 'plugin.zip',
-  zipPath: 'build/',
-  addContributor: false,
-  developerId: 1,
-  pluginId: 2,
-  publicKey: 'pub',
-  secretKey: 'sec'
+  zipPath: 'dist/',
+  productId: 2,
+  apiToken: 'token'
 }
 
 const methodOf = (input, opts) => (opts ? opts.method : input.method)
@@ -33,7 +30,7 @@ test('runDeploy throws VersionExistsError and never calls the upload endpoint wh
       return { text: async () => '{}' }
     }
 
-    return { ok: true, status: 200, text: async () => JSON.stringify({ tags: { 1: { version: '1.2.0' } } }) }
+    return { ok: true, status: 200, text: async () => JSON.stringify({ tags: [{ version: '1.2.0' }] }) }
   })
 
   await assert.rejects(
@@ -55,7 +52,7 @@ test('runDeploy throws ZipFileNotFoundError and never calls the upload endpoint 
       return { text: async () => '{}' }
     }
 
-    return { ok: true, status: 200, text: async () => JSON.stringify({ tags: {} }) }
+    return { ok: true, status: 200, text: async () => JSON.stringify({ tags: [] }) }
   })
 
   await assert.rejects(
@@ -66,25 +63,64 @@ test('runDeploy throws ZipFileNotFoundError and never calls the upload endpoint 
   assert.equal(uploadCalled, false)
 })
 
-test('runDeploy calls the upload endpoint when no conflicting tag exists', async () => {
+test('runDeploy calls the upload endpoint and defaults to releaseMode "pending", never calling release', async () => {
   const dir = mkdtempSync(path.join(os.tmpdir(), 'freemius-deployer-run-test-'))
   writeFileSync(path.join(dir, 'plugin.zip'), 'zip-contents')
 
   let uploadCalled = false
+  let releaseCalled = false
 
   mock.method(globalThis, 'fetch', async (input, opts) => {
-    if (methodOf(input, opts) === 'POST') {
+    const method = methodOf(input, opts)
+
+    if (method === 'POST') {
       uploadCalled = true
-      return { text: async () => JSON.stringify({ version: '1.2.0' }) }
+      return { text: async () => JSON.stringify({ id: 42, version: '1.2.0', release_mode: 'pending' }) }
     }
 
-    return { ok: true, status: 200, text: async () => JSON.stringify({ tags: {} }) }
+    if (method === 'PUT') {
+      releaseCalled = true
+      return { text: async () => JSON.stringify({ id: 42, version: '1.2.0', release_mode: 'released' }) }
+    }
+
+    return { ok: true, status: 200, text: async () => JSON.stringify({ tags: [] }) }
   })
 
   const result = await runDeploy({ ...baseConfig, zipPath: dir })
 
   assert.equal(uploadCalled, true)
-  assert.deepEqual(result, { version: '1.2.0' })
+  assert.equal(releaseCalled, false)
+  assert.deepEqual(result, { id: 42, version: '1.2.0', release_mode: 'pending' })
+})
+
+test('runDeploy calls the upload endpoint, then releases it, when releaseMode is "released"', async () => {
+  const dir = mkdtempSync(path.join(os.tmpdir(), 'freemius-deployer-run-test-'))
+  writeFileSync(path.join(dir, 'plugin.zip'), 'zip-contents')
+
+  let uploadCalled = false
+  let releaseCalled = false
+
+  mock.method(globalThis, 'fetch', async (input, opts) => {
+    const method = methodOf(input, opts)
+
+    if (method === 'POST') {
+      uploadCalled = true
+      return { text: async () => JSON.stringify({ id: 42, version: '1.2.0' }) }
+    }
+
+    if (method === 'PUT') {
+      releaseCalled = true
+      return { text: async () => JSON.stringify({ id: 42, version: '1.2.0', release_mode: 'released' }) }
+    }
+
+    return { ok: true, status: 200, text: async () => JSON.stringify({ tags: [] }) }
+  })
+
+  const result = await runDeploy({ ...baseConfig, zipPath: dir }, { releaseMode: 'released' })
+
+  assert.equal(uploadCalled, true)
+  assert.equal(releaseCalled, true)
+  assert.deepEqual(result, { id: 42, version: '1.2.0', release_mode: 'released' })
 })
 
 test('runDeploy with dryRun checks version and zip but never calls the upload endpoint', async () => {
@@ -96,10 +132,10 @@ test('runDeploy with dryRun checks version and zip but never calls the upload en
   mock.method(globalThis, 'fetch', async (input, opts) => {
     if (methodOf(input, opts) === 'POST') {
       uploadCalled = true
-      return { text: async () => JSON.stringify({ version: '1.2.0' }) }
+      return { text: async () => JSON.stringify({ id: 42, version: '1.2.0' }) }
     }
 
-    return { ok: true, status: 200, text: async () => JSON.stringify({ tags: {} }) }
+    return { ok: true, status: 200, text: async () => JSON.stringify({ tags: [] }) }
   })
 
   const result = await runDeploy({ ...baseConfig, zipPath: dir }, { dryRun: true })
@@ -109,8 +145,8 @@ test('runDeploy with dryRun checks version and zip but never calls the upload en
     dryRun: true,
     version: '1.2.0',
     zipFile: path.join(dir, 'plugin.zip'),
-    pluginId: 2,
-    addContributor: false
+    productId: 2,
+    releaseMode: 'pending'
   })
 })
 
@@ -118,7 +154,7 @@ test('runDeploy with dryRun still throws ZipFileNotFoundError when the zip is mi
   const dir = mkdtempSync(path.join(os.tmpdir(), 'freemius-deployer-run-test-'))
 
   mock.method(globalThis, 'fetch', async () => {
-    return { ok: true, status: 200, text: async () => JSON.stringify({ tags: {} }) }
+    return { ok: true, status: 200, text: async () => JSON.stringify({ tags: [] }) }
   })
 
   await assert.rejects(
