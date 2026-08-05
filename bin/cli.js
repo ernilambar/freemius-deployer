@@ -18,7 +18,7 @@ const pkg = JSON.parse(readFileSync(path.join(path.dirname(fileURLToPath(import.
 const HELP = `Usage: freemius-deployer [options]
 
 Options:
-  -c, --config <path>       use a different project root
+  -c, --config <path>       use a different config file
   -e, --env-file <path>     use a different env file
   -r, --release-mode <mode> release status for the uploaded version (${RELEASE_MODES.join('|')}) (default: pending)
   -d, --dry-run             validate without uploading
@@ -60,8 +60,7 @@ if (!RELEASE_MODES.includes(values['release-mode'])) {
   process.exit(1)
 }
 
-const projectRoot = values.config ? path.resolve(process.cwd(), values.config) : process.cwd()
-const envFile = values['env-file'] ? path.resolve(process.cwd(), values['env-file']) : path.join(projectRoot, '.env')
+const envFile = values['env-file'] ? path.resolve(process.cwd(), values['env-file']) : path.join(process.cwd(), '.env')
 
 dotenv.config({ path: envFile })
 
@@ -72,7 +71,8 @@ const log = (...args) => {
 const main = async () => {
   log('Processing...')
 
-  const config = loadConfig(projectRoot)
+  const configPath = values.config ? path.resolve(process.cwd(), values.config) : undefined
+  const config = loadConfig(process.cwd(), configPath)
   const result = await runDeploy(config, { dryRun: values['dry-run'], releaseMode: values['release-mode'] })
 
   if (result.dryRun) {

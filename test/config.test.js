@@ -59,6 +59,14 @@ test('throws ConfigError when FREEMIUS_PRODUCT_ID is not a valid number', () => 
   })
 })
 
+test('throws ConfigError when FREEMIUS_PRODUCT_ID has trailing non-numeric characters', () => {
+  const dir = makeProjectDir({ name: 'my-plugin', version: '1.2.3' })
+
+  withEnv({ FREEMIUS_PRODUCT_ID: '12345x', FREEMIUS_API_TOKEN: 'token' }, () => {
+    assert.throws(() => loadConfig(dir), { message: 'Invalid Product ID.' })
+  })
+})
+
 test('throws ConfigError when FREEMIUS_API_TOKEN is missing', () => {
   const dir = makeProjectDir({ name: 'my-plugin', version: '1.2.3' })
 
@@ -130,6 +138,28 @@ test('throws ConfigError when freemius-deployer.json is not valid JSON', () => {
 
   withEnv({ FREEMIUS_PRODUCT_ID: '1', FREEMIUS_API_TOKEN: 'token' }, () => {
     assert.throws(() => loadConfig(dir), ConfigError)
+  })
+})
+
+test('loads overrides from an explicit config file path, ignoring freemius-deployer.json in cwd', () => {
+  const dir = makeProjectDir({ name: 'my-plugin', version: '1.2.3' })
+  writeConfigFile(dir, { zipName: 'wrong.zip' })
+
+  const explicitPath = path.join(dir, 'custom-config.json')
+  writeFileSync(explicitPath, JSON.stringify({ zipName: 'right.zip' }))
+
+  withEnv({ FREEMIUS_PRODUCT_ID: '1', FREEMIUS_API_TOKEN: 'token' }, () => {
+    const config = loadConfig(dir, explicitPath)
+
+    assert.equal(config.zipName, 'right.zip')
+  })
+})
+
+test('throws ConfigError when an explicit config file path does not exist', () => {
+  const dir = makeProjectDir({ name: 'my-plugin', version: '1.2.3' })
+
+  withEnv({ FREEMIUS_PRODUCT_ID: '1', FREEMIUS_API_TOKEN: 'token' }, () => {
+    assert.throws(() => loadConfig(dir, path.join(dir, 'missing.json')), ConfigError)
   })
 })
 

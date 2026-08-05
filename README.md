@@ -43,7 +43,7 @@ Get the API token from the Freemius Developer Dashboard: open your product's Set
 ## CLI flags
 
 - `-d, --dry-run` — validate without uploading
-- `-c, --config <path>` — use a different project root
+- `-c, --config <path>` — use a different config file
 - `-e, --env-file <path>` — use a different env file
 - `-q, --quiet` — suppress non-error output
 - `-r, --release-mode <pending|beta|released>` — release status to set on the uploaded version (default: `pending`)

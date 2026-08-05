@@ -38,3 +38,21 @@ test('throws ApiError when the tags response is not valid JSON', async () => {
     (err) => err instanceof ApiError && err.message === 'Failed to parse tags response from Freemius.'
   )
 })
+
+test('throws ApiError when the tags response has no tags field', async () => {
+  mockTagsResponse(JSON.stringify({}))
+
+  await assert.rejects(
+    checkVersionAvailable(credentials, 2, '1.0.0'),
+    (err) => err instanceof ApiError && err.message === 'Unexpected tags response from Freemius.'
+  )
+})
+
+test('throws ApiError when a tag has an unparseable version string', async () => {
+  mockTagsResponse(JSON.stringify({ tags: [{ version: 'not-a-version' }] }))
+
+  await assert.rejects(
+    checkVersionAvailable(credentials, 2, '1.0.0'),
+    (err) => err instanceof ApiError && err.message === 'Failed to compare versions in the tags response from Freemius.'
+  )
+})
