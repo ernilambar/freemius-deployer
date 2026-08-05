@@ -34,3 +34,7 @@ FS__API_PLUGIN_ID=12345
 FS__API_PUBLIC_KEY="pk_YOUR_PUBLIC_KEY"
 FS__API_SECRET_KEY="sk_YOUR_SECRET_KEY"
 ```
+
+## License
+
+[MIT](LICENSE) © 2026 [Nilambar Sharma](https://www.nilambar.net)

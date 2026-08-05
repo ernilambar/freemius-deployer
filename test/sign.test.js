@@ -1,21 +1,27 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import cryptoPackage from 'crypto-js'
+import { createHmac } from 'node:crypto'
 
 import { base64UrlEncode, signRequest, buildAuthHeader } from '../lib/sign.js'
-
-const { HmacSHA256 } = cryptoPackage
 
 test('base64UrlEncode strips padding from standard base64', () => {
   assert.equal(base64UrlEncode('a'), Buffer.from('a').toString('base64').replace(/=/g, ''))
   assert.equal(base64UrlEncode('hello world'), 'aGVsbG8gd29ybGQ')
 })
 
+test('base64UrlEncode maps + and / to url-safe characters', () => {
+  assert.equal(Buffer.from('  >').toString('base64'), 'ICA+')
+  assert.equal(base64UrlEncode('  >'), 'ICA-')
+
+  assert.equal(Buffer.from('  ?').toString('base64'), 'ICA/')
+  assert.equal(base64UrlEncode('  ?'), 'ICA_')
+})
+
 test('signRequest signature matches an independently computed HMAC over the same string', () => {
   const { date, signature } = signRequest('POST', '/v1/foo', 'application/json', 'secret')
 
   const stringToSign = ['POST', '', 'application/json', date, '/v1/foo'].join('\n')
-  const expected = base64UrlEncode(HmacSHA256(stringToSign, 'secret').toString())
+  const expected = base64UrlEncode(createHmac('sha256', 'secret').update(stringToSign).digest('hex'))
 
   assert.equal(signature, expected)
 })
@@ -24,7 +30,7 @@ test('signRequest includes a supplied contentMd5 in the signed string', () => {
   const { date, signature } = signRequest('POST', '/v1/foo', 'application/json', 'secret', 'md5hash')
 
   const stringToSign = ['POST', 'md5hash', 'application/json', date, '/v1/foo'].join('\n')
-  const expected = base64UrlEncode(HmacSHA256(stringToSign, 'secret').toString())
+  const expected = base64UrlEncode(createHmac('sha256', 'secret').update(stringToSign).digest('hex'))
 
   assert.equal(signature, expected)
 })

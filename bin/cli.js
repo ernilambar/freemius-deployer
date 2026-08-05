@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 import path from 'path'
+import { existsSync, readFileSync } from 'node:fs'
 
-import fs from 'fs-extra'
 import chalk from 'chalk'
 
 import 'dotenv/config'
@@ -28,11 +28,11 @@ const main = async () => {
 
   const zipFile = path.join(zipPath, zipName)
 
-  if (!fs.existsSync(zipFile)) {
+  if (!existsSync(zipFile)) {
     throw new ZipFileNotFoundError(`File not found: ${zipFile}`)
   }
 
-  const buffer = fs.readFileSync(zipFile)
+  const buffer = readFileSync(zipFile)
 
   const result = await deployZip(
     credentials,

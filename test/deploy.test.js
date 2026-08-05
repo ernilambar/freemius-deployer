@@ -1,42 +1,46 @@
 import { test, mock } from 'node:test'
 import assert from 'node:assert/strict'
-import needlePackage from 'needle'
 
 import { DeployError, ApiError } from '../lib/errors.js'
-
-// needle's `post` is destructured once at module-load time in lib/deploy.js, so
-// re-mocking the property after that import wouldn't be seen there. Instead we
-// install a single mock up front and let each test swap the behaviour it delegates to.
-let behavior
-mock.method(needlePackage, 'post', (url, data, options, cb) => behavior(url, data, options, cb))
-
-const { deployZip } = await import('../lib/deploy.js')
+import { deployZip } from '../lib/deploy.js'
 
 const credentials = { developerId: 1, publicKey: 'pub', secretKey: 'sec' }
 
+test.afterEach(() => {
+  mock.restoreAll()
+})
+
 test('resolves with the response body on success', async () => {
-  behavior = (url, data, options, cb) => {
-    assert.equal(url, 'https://api.freemius.com/v1/developers/1/plugins/2/tags.json')
-    assert.equal(data.file.filename, 'plugin.zip')
-    cb(null, null, { version: '1.0.0' })
-  }
+  mock.method(globalThis, 'fetch', async (request) => {
+    assert.equal(request.url, 'https://api.freemius.com/v1/developers/1/plugins/2/tags.json')
+    assert.equal(request.method, 'POST')
+    assert.match(request.headers.get('content-type'), /^multipart\/form-data; boundary=/)
+    assert.match(request.headers.get('authorization'), /^FS 1:pub:/)
+
+    const form = await request.formData()
+    assert.equal(form.get('file').name, 'plugin.zip')
+
+    return { text: async () => JSON.stringify({ version: '1.0.0' }) }
+  })
 
   const result = await deployZip(credentials, Buffer.from('zip-contents'), { pluginId: 2, zipName: 'plugin.zip', addContributor: false })
 
   assert.deepEqual(result, { version: '1.0.0' })
 })
 
-test('sends addContributor as a string so needle keeps the field', async () => {
-  behavior = (url, data, options, cb) => {
-    assert.equal(data.add_contributor, 'true')
-    cb(null, null, {})
-  }
+test('sends addContributor as a string field', async () => {
+  mock.method(globalThis, 'fetch', async (request) => {
+    const form = await request.formData()
+    assert.equal(form.get('add_contributor'), 'true')
+
+    return { text: async () => '{}' }
+  })
 
   await deployZip(credentials, Buffer.from('zip-contents'), { pluginId: 2, zipName: 'plugin.zip', addContributor: true })
 })
 
 test('rejects with DeployError on a transport error', async () => {
-  behavior = (url, data, options, cb) => cb(new Error('network down'), null, null)
+  mock.method(globalThis, 'fetch', async () => { throw new Error('network down') })
 
   await assert.rejects(
     deployZip(credentials, Buffer.from('zip-contents'), { pluginId: 2, zipName: 'plugin.zip', addContributor: false }),
@@ -45,7 +49,9 @@ test('rejects with DeployError on a transport error', async () => {
 })
 
 test('rejects with ApiError when the response body reports an error', async () => {
-  behavior = (url, data, options, cb) => cb(null, null, { error: { message: 'Plugin ID is invalid.' } })
+  mock.method(globalThis, 'fetch', async () => ({
+    text: async () => JSON.stringify({ error: { message: 'Plugin ID is invalid.' } })
+  }))
 
   await assert.rejects(
     deployZip(credentials, Buffer.from('zip-contents'), { pluginId: 2, zipName: 'plugin.zip', addContributor: false }),
