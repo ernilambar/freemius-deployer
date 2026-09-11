@@ -25,8 +25,8 @@
     "lib/"
   ],
   "scripts": {
-    "format": "standard --fix",
-    "lint": "standard",
+    "format": "eslint . --fix",
+    "lint": "eslint .",
     "test": "node --test",
     "test:coverage": "node --test --experimental-test-coverage"
   },
@@ -36,7 +36,8 @@
     "dotenv": "^17.4.2"
   },
   "devDependencies": {
-    "standard": "^17.1.2"
+    "eslint": "^9.39.5",
+    "neostandard": "^0.13.0"
   },
   "engines": {
     "node": ">=22"

@@ -2,7 +2,7 @@
 
 ## Overview
 
-Deploy WordPress plugin zips to Freemius via CLI. Node.js ESM package (Node >= 22), zero runtime deps beyond chalk/compare-versions/dotenv, linted with `standard`.
+Deploy WordPress plugin zips to Freemius via CLI. Node.js ESM package (Node >= 22), zero runtime deps beyond chalk/compare-versions/dotenv, linted with `neostandard` (via ESLint).
 
 ## Setup
 
@@ -15,8 +15,8 @@ Create `.env` with `FREEMIUS_PRODUCT_ID` and `FREEMIUS_API_TOKEN` (see README).
 ## Commands
 
 ```sh
-npm run lint        # standard linter
-npm run format      # standard --fix
+npm run lint        # eslint (neostandard)
+npm run format      # eslint --fix
 npm test             # node --test
 npm run test:coverage
 ```
@@ -26,7 +26,7 @@ npm run test:coverage
 - ESM only — every source file uses `import`/`export`, `"type": "module"`.
 - One module per concern: `cli.js` parses flags, `run.js` orchestrates, `deploy.js` talks to Freemius, `config.js` resolves config, `version.js` compares versions, `errors.js` defines custom errors.
 - No TypeScript — plain `.js` files, no build step, `main` points at `lib/index.js`.
-- Linter is `standard` (no config file) — do not add ESLint/Prettier configs.
+- Linting uses `neostandard` through ESLint, configured in `eslint.config.mjs` — do not add Prettier configs.
 - Tests live in `test/` as `*.test.js`, one per module, run via `node --test`.
 
 ## Quality gate
