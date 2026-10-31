@@ -31,13 +31,16 @@
     "test:coverage": "node --test --experimental-test-coverage"
   },
   "dependencies": {
-    "chalk": "^6.0.0",
+    "chalk": "^6.0.1",
     "compare-versions": "^6.1.1",
-    "dotenv": "^17.4.2"
+    "dotenv": "^18.0.9"
   },
   "devDependencies": {
-    "eslint": "^9.39.5",
-    "neostandard": "^0.13.0"
+    "eslint": "^10.14.0",
+    "neostandard": "^0.14.1"
+  },
+  "overrides": {
+    "minimatch": "^11.0.3"
   },
   "engines": {
     "node": ">=22"
